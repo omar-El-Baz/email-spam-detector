@@ -4,6 +4,8 @@ import numpy as np
 import re
 from pathlib import Path
 
+st.set_page_config(page_title="Email Spam Detector", layout="wide")
+
 
 # --- Feature Definitions (CRITICAL: Must match your training data order) ---
 # These are the 57 features in the order your model expects them.
@@ -103,10 +105,9 @@ def load_model(path):
         st.error(f"Error loading the model: {e}")
         return None
 
-model = load_model("../models/rf_best_model.pkl")  # Adjust the path if necessary
+model = load_model("/Users/omar/Desktop/College/Semester 4/Intelligent Programming/Projects/email-spam-detector/models/rf_best_model.pkl")  # Adjust the path if necessary
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="Email Spam Detector", layout="wide")
 st.title("📧 Email Spam Detector")
 st.markdown("""
 Enter the text of an email below. The model will predict whether it's **Spam** or **Not Spam**.
