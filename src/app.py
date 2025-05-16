@@ -146,14 +146,6 @@ if st.button("🔎 Classify Email", type="primary"):
                         not_spam_prob = probability[0][0] * 100
                         st.success(f"✅ This email is classified as: NOT SPAM (Confidence: {not_spam_prob:.2f}%)")
 
-                    # Optional: Display a snippet of extracted features for verification
-                    with st.expander("Show Extracted Features (sample)"):
-                        st.write("First 10 extracted feature values (out of 57):")
-                        st.json({
-                            "Raw features": dict(zip(FEATURE_NAMES_IN_ORDER[:10], features_vector[0][:10].round(4).tolist())),
-                            "Scaled features": dict(zip(FEATURE_NAMES_IN_ORDER[:10], features_scaled[0][:10].round(4).tolist()))
-                        })
-
                 except Exception as e:
                     st.error(f"An error occurred during prediction: {e}")
             else:
@@ -161,4 +153,3 @@ if st.button("🔎 Classify Email", type="primary"):
                 st.warning("Could not extract features from the provided text (perhaps it's empty).")
 
 st.markdown("---")
-st.markdown("Developed as part of a project to automate email classification.")
