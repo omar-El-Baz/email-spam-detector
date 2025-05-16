@@ -105,7 +105,7 @@ def load_model(path):
         st.error(f"Error loading the model: {e}")
         return None
 
-model = load_model("/Users/omar/Desktop/College/Semester 4/Intelligent Programming/Projects/email-spam-detector/models/rf_best_model.pkl")  # Adjust the path if necessary
+model = load_model("models/rf_best_model.pkl")  # Adjust the path if necessary
 
 # --- Streamlit UI ---
 st.title("📧 Email Spam Detector")
