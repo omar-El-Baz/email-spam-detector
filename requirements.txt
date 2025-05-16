@@ -1,0 +1,18 @@
+# Core libraries
+pandas
+numpy
+notebook
+
+# Text preprocessing
+nltk
+scikit-learn
+
+# Model evaluation and processing
+matplotlib
+seaborn
+
+# For saving the model
+joblib
+
+# Streamlit UI (Bonus Feature)
+streamlit
