@@ -4,11 +4,6 @@ import numpy as np
 import re
 from pathlib import Path
 
-# --- Configuration ---
-# Determine the base path (could be the directory of app.py)
-BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR / "models"
-MODEL_PATH = MODEL_DIR / "rf_best_model.pkl" # Assuming your model is here
 
 # --- Feature Definitions (CRITICAL: Must match your training data order) ---
 # These are the 57 features in the order your model expects them.
@@ -108,7 +103,7 @@ def load_model(path):
         st.error(f"Error loading the model: {e}")
         return None
 
-model = load_model(MODEL_PATH)
+model = load_model("../models/rf_best_model.pkl")  # Adjust the path if necessary
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="Email Spam Detector", layout="wide")
