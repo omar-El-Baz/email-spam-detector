@@ -7,9 +7,8 @@ from pathlib import Path
 st.set_page_config(page_title="Email Spam Detector", layout="wide")
 
 
-# --- Feature Definitions (CRITICAL: Must match your training data order) ---
-# These are the 57 features in the order your model expects them.
-# This order is derived from the Spambase dataset description.
+# --- Feature Definitions---
+# These are the 57 features in the order the model expects them.
 FEATURE_NAMES_IN_ORDER = [
     'word_freq_make', 'word_freq_address', 'word_freq_all', 'word_freq_3d', 
     'word_freq_our', 'word_freq_over', 'word_freq_remove', 'word_freq_internet', 
@@ -92,33 +91,34 @@ def extract_features_from_text(email_text: str) -> np.ndarray | None:
 
     return np.array(features).reshape(1, -1)
 
-# --- Load Model ---
-@st.cache_resource # Cache the model loading
-def load_model(path):
+# --- Load Model and Scaler ---
+@st.cache_resource # Cache the model and scaler loading
+def load_model_and_scaler():
     try:
-        model = joblib.load(path)
-        return model
-    except FileNotFoundError:
-        st.error(f"Error: Model file not found at {path}. Please ensure the model is in the 'models' sub-directory.")
-        return None
+        model = joblib.load("models/rf_best_model.pkl")
+        scaler = joblib.load("models/standard_scaler.pkl")
+        return model, scaler
+    except FileNotFoundError as e:
+        st.error(f"Error: Model or scaler file not found. Please ensure both files are in the 'models' sub-directory. Error: {e}")
+        return None, None
     except Exception as e:
-        st.error(f"Error loading the model: {e}")
-        return None
+        st.error(f"Error loading the model or scaler: {e}")
+        return None, None
 
-model = load_model("models/rf_best_model.pkl")  # Adjust the path if necessary
+model, scaler = load_model_and_scaler()
 
 # --- Streamlit UI ---
 st.title("📧 Email Spam Detector")
 st.markdown("""
 Enter the text of an email below. The model will predict whether it's **Spam** or **Not Spam**.
-This model was trained on the Spambase dataset and uses a RandomForestClassifier.
+This model was trained on the Spambase dataset and uses a RandomForestClassifier with StandardScaler preprocessing.
 """)
 
 email_input = st.text_area("Paste Email Text Here:", height=250, placeholder="Dear friend, you have won a prize...")
 
 if st.button("🔎 Classify Email", type="primary"):
-    if not model:
-        st.warning("Model is not loaded. Cannot classify.")
+    if not model or not scaler:
+        st.warning("Model or scaler is not loaded. Cannot classify.")
     elif not email_input or not email_input.strip():
         st.warning("Please enter some email text to classify.")
     else:
@@ -128,11 +128,14 @@ if st.button("🔎 Classify Email", type="primary"):
             
             if features_vector is not None:
                 try:
-                    # 2. Make prediction (model is a pipeline, handles scaling)
-                    prediction = model.predict(features_vector)
-                    probability = model.predict_proba(features_vector)
+                    # 2. Scale features with the same scaler used during training
+                    features_scaled = scaler.transform(features_vector)
+                    
+                    # 3. Make prediction with scaled features
+                    prediction = model.predict(features_scaled)
+                    probability = model.predict_proba(features_scaled)
 
-                    # 3. Display result
+                    # 4. Display result
                     is_spam = (prediction[0] == 1)
                     
                     st.subheader("Classification Result:")
@@ -144,9 +147,12 @@ if st.button("🔎 Classify Email", type="primary"):
                         st.success(f"✅ This email is classified as: NOT SPAM (Confidence: {not_spam_prob:.2f}%)")
 
                     # Optional: Display a snippet of extracted features for verification
-                    # with st.expander("Show Extracted Features (sample)"):
-                    #     st.write("First 10 extracted feature values (out of 57):")
-                    #     st.json(dict(zip(FEATURE_NAMES_IN_ORDER[:10], features_vector[0][:10].round(4).tolist())))
+                    with st.expander("Show Extracted Features (sample)"):
+                        st.write("First 10 extracted feature values (out of 57):")
+                        st.json({
+                            "Raw features": dict(zip(FEATURE_NAMES_IN_ORDER[:10], features_vector[0][:10].round(4).tolist())),
+                            "Scaled features": dict(zip(FEATURE_NAMES_IN_ORDER[:10], features_scaled[0][:10].round(4).tolist()))
+                        })
 
                 except Exception as e:
                     st.error(f"An error occurred during prediction: {e}")
